@@ -159,43 +159,55 @@
       }
     }
   });
-
-
   document.addEventListener("DOMContentLoaded", function () {
-    const breadcrumbContainer = document.querySelector(".page-title nav ol"); // Select the breadcrumb container
-    if (!breadcrumbContainer) return; // Exit if the breadcrumb container is missing
+    const breadcrumbContainer = document.querySelector(".page-title nav ol");
+    if (!breadcrumbContainer) return; // Exit if breadcrumb container is missing
 
-    // Split and filter the URL path into segments
-    const pathSegments = window.location.pathname.split('/').filter(segment => segment);
-    let currentPath = "";
+    // Define custom breadcrumb names
+    const customBreadcrumbs = {
+        "index.html": "Home",
+        "capabilities.html": "Capabilities",
+        "bastudies.html": "BA/BE Studies",
+        "clinicpharmacologyunit.html": "Clinic Pharmacology Unit",
+        "projectmanagement.html": "Project Management",
+        "biostatistics-data-management.html": "Biostatistics & Data Management",
+        "regulatoryaffairs.html": "Regulatory Affairs",
+        "qualityassurance.html": "Quality Assurance",
+        "medical-and-scientific-affairs.html": "Medical & Scientific Affairs"
+    };
 
-    // Start with the 'Home' breadcrumb
-    let breadcrumbHTML = `<li><a href="/">Home</a></li>`;
+    // Get the current page filename
+    let currentPage = window.location.pathname.split('/').pop() || "index.html"; 
 
-    // Add the previous page link if available
-    const referrer = document.referrer;
-    if (referrer && new URL(referrer).origin === window.location.origin) {
-      // Only include referrer if it's from the same origin
-      breadcrumbHTML += `<li><a href="${referrer}">Previous Page</a></li>`;
+    // Retrieve navigation history from sessionStorage
+    let history = JSON.parse(sessionStorage.getItem("breadcrumbHistory")) || [];
+
+    // If the previous page exists and is not a duplicate of the current page, add it to history
+    if (history.length === 0 || history[history.length - 1] !== currentPage) {
+        history.push(currentPage);
+        sessionStorage.setItem("breadcrumbHistory", JSON.stringify(history)); // Save updated history
     }
 
-    // Generate breadcrumbs for each segment
-    pathSegments.forEach((segment, index) => {
-      currentPath += `/${segment}`; // Build the cumulative path
+    // Start breadcrumb with Home
+    let breadcrumbHTML = `<li><a href="index.html">Home</a></li>`;
 
-      // Check if it's the last segment
-      if (index === pathSegments.length - 1) {
-        // Last segment: Display as active text
-        breadcrumbHTML += `<li class="active">${decodeURIComponent(segment.replace(/-/g, ' '))}</li>`;
-      } else {
-        // Other segments: Display as a link
-        breadcrumbHTML += `<li><a href="${currentPath}">${decodeURIComponent(segment.replace(/-/g, ' '))}</a></li>`;
-      }
+    // Build the breadcrumb trail
+    let pathSoFar = "";
+    history.forEach((page, index) => {
+        if (customBreadcrumbs[page]) {
+            pathSoFar = page; // Update path
+
+            if (index === history.length - 1) {
+                breadcrumbHTML += `<li class="active">${customBreadcrumbs[page]}</li>`; // Active last page
+            } else {
+                breadcrumbHTML += `<li><a href="${pathSoFar}">${customBreadcrumbs[page]}</a></li>`;
+            }
+        }
     });
 
     // Inject the breadcrumb HTML into the container
     breadcrumbContainer.innerHTML = breadcrumbHTML;
-  });
+});
 
 
 
