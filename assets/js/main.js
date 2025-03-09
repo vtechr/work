@@ -163,44 +163,48 @@
     const breadcrumbContainer = document.querySelector(".page-title nav ol");
     if (!breadcrumbContainer) return; // Exit if breadcrumb container is missing
 
-    // Define custom breadcrumb names
+    // Define custom breadcrumb names with their respective URLs
     const customBreadcrumbs = {
-        "index.html": "Home",
-        "capabilities.html": "Capabilities",
-        "bastudies.html": "BA/BE Studies",
-        "clinicpharmacologyunit.html": "Clinic Pharmacology Unit",
-        "projectmanagement.html": "Project Management",
-        "biostatistics-data-management.html": "Biostatistics & Data Management",
-        "regulatoryaffairs.html": "Regulatory Affairs",
-        "qualityassurance.html": "Quality Assurance",
-        "medical-and-scientific-affairs.html": "Medical & Scientific Affairs"
+        "index.html": { name: "Home", url: "index.html" },
+        "capabilities.html": { name: "Capabilities", url: "capabilities.html" },
+        "bastudies.html": { name: "BA/BE Studies", url: "bastudies.html" },
+        "clinicpharmacologyunit.html": { name: "Clinic Pharmacology Unit", url: "clinicpharmacologyunit.html" },
+        "projectmanagement.html": { name: "Project Management", url: "projectmanagement.html" },
+        "biostatistics-data-management.html": { name: "Biostatistics & Data Management", url: "biostatistics-data-management.html" },
+        "regulatoryaffairs.html": { name: "Regulatory Affairs", url: "regulatoryaffairs.html" },
+        "qualityassurance.html": { name: "Quality Assurance", url: "qualityassurance.html" },
+        "medical-and-scientific-affairs.html": { name: "Medical & Scientific Affairs", url: "medical-and-scientific-affairs.html" }
     };
 
     // Get the current page filename
-    let currentPage = window.location.pathname.split('/').pop() || "index.html"; 
+    let currentPage = window.location.pathname.split('/').pop() || "index.html";
 
     // Retrieve navigation history from sessionStorage
     let history = JSON.parse(sessionStorage.getItem("breadcrumbHistory")) || [];
 
-    // If the previous page exists and is not a duplicate of the current page, add it to history
+    // Remove duplicate entries while keeping order
+    history = history.filter((page, index, self) => self.indexOf(page) === index);
+
+    // If the last visited page is different from the current page, add it
     if (history.length === 0 || history[history.length - 1] !== currentPage) {
         history.push(currentPage);
-        sessionStorage.setItem("breadcrumbHistory", JSON.stringify(history)); // Save updated history
     }
+
+    // Save updated history
+    sessionStorage.setItem("breadcrumbHistory", JSON.stringify(history));
 
     // Start breadcrumb with Home
     let breadcrumbHTML = `<li><a href="index.html">Home</a></li>`;
 
-    // Build the breadcrumb trail
-    let pathSoFar = "";
+    // Build the breadcrumb trail, ensuring correct order and no duplicates
     history.forEach((page, index) => {
         if (customBreadcrumbs[page]) {
-            pathSoFar = page; // Update path
+            let { name, url } = customBreadcrumbs[page];
 
             if (index === history.length - 1) {
-                breadcrumbHTML += `<li class="active">${customBreadcrumbs[page]}</li>`; // Active last page
+                breadcrumbHTML += `<li class="active">${name}</li>`; // Last page (active)
             } else {
-                breadcrumbHTML += `<li><a href="${pathSoFar}">${customBreadcrumbs[page]}</a></li>`;
+                breadcrumbHTML += `<li><a href="${url}">${name}</a></li>`; // Clickable breadcrumb
             }
         }
     });
